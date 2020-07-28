@@ -1,0 +1,70 @@
+package com.example.oauth2.config.security.oauth2;
+
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.RequestEntity;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationExchange;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.security.oauth2.core.endpoint.PkceParameterNames;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+
+public class OAuth2AuthorizationCodeGrantRequestEntityConverter implements Converter<OAuth2AuthorizationCodeGrantRequest, RequestEntity<?>> {
+
+    @Override
+    public RequestEntity<?> convert(OAuth2AuthorizationCodeGrantRequest authorizationCodeGrantRequest) {
+        ClientRegistration clientRegistration = authorizationCodeGrantRequest.getClientRegistration();
+
+        HttpHeaders headers = OAuth2AuthorizationGrantRequestEntityUtils.getTokenRequestHeaders(clientRegistration);
+        MultiValueMap<String, String> formParameters = this.buildFormParameters(authorizationCodeGrantRequest);
+        URI uri = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails().getTokenUri())
+                .build()
+                .toUri();
+        // if (uri.getPath().contains("oauth/token")) {
+        //     String clientCredentials = formParameters.get("client_id").get(0) + ":" + formParameters.get("client_secret").get(0);
+        //     String base64ClientCredentials = null;
+        //     try {
+        //         base64ClientCredentials = new String(Base64.encodeBase64(clientCredentials.getBytes("utf-8")));
+        //     } catch (UnsupportedEncodingException e) {
+        //         e.printStackTrace();
+        //     }
+        //     headers.set("Authorization", "Basic " + base64ClientCredentials);
+        // }
+        return new RequestEntity<>(formParameters, headers, HttpMethod.POST, uri);
+    }
+
+    private MultiValueMap<String, String> buildFormParameters(OAuth2AuthorizationCodeGrantRequest authorizationCodeGrantRequest) {
+        ClientRegistration clientRegistration = authorizationCodeGrantRequest.getClientRegistration();
+        OAuth2AuthorizationExchange authorizationExchange = authorizationCodeGrantRequest.getAuthorizationExchange();
+
+        MultiValueMap<String, String> formParameters = new LinkedMultiValueMap<>();
+        formParameters.add(OAuth2ParameterNames.GRANT_TYPE, authorizationCodeGrantRequest.getGrantType().getValue());
+        formParameters.add(OAuth2ParameterNames.CODE, authorizationExchange.getAuthorizationResponse().getCode());
+        String redirectUri = authorizationExchange.getAuthorizationRequest().getRedirectUri();
+        String codeVerifier = authorizationExchange.getAuthorizationRequest().getAttribute(PkceParameterNames.CODE_VERIFIER);
+        if (redirectUri != null) {
+            formParameters.add(OAuth2ParameterNames.REDIRECT_URI, redirectUri);
+        }
+        if (!ClientAuthenticationMethod.BASIC.equals(clientRegistration.getClientAuthenticationMethod())) {
+            formParameters.add(OAuth2ParameterNames.CLIENT_ID, clientRegistration.getClientId());
+        }
+        if (ClientAuthenticationMethod.POST.equals(clientRegistration.getClientAuthenticationMethod())) {
+            formParameters.add(OAuth2ParameterNames.CLIENT_SECRET, clientRegistration.getClientSecret());
+        }
+        if (codeVerifier != null) {
+            formParameters.add(PkceParameterNames.CODE_VERIFIER, codeVerifier);
+        }
+
+        return formParameters;
+    }
+
+}

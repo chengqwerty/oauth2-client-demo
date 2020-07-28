@@ -7,7 +7,6 @@ import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
-import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequestEntityConverter;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -49,6 +48,8 @@ public class AuthorizationCodeTokenResponseClient implements OAuth2AccessTokenRe
         Assert.notNull(authorizationCodeGrantRequest, "authorizationCodeGrantRequest cannot be null");
 
         RequestEntity<?> request = this.requestEntityConverter.convert(authorizationCodeGrantRequest);
+        // assert request != null;
+        // request.getHeaders().set("", "");
 
         ResponseEntity<OAuth2AccessTokenResponse> response;
         try {
