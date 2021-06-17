@@ -24,10 +24,12 @@ public class OAuth2LoginSecurityConfig {
             @Override
             protected void configure(HttpSecurity http) throws Exception {
                 super.configure(http);
-                http.oauth2Login();
-                // http.oauth2Login().tokenEndpoint().accessTokenResponseClient(new AuthorizationCodeTokenResponseClient());
+                http.oauth2Login().defaultSuccessUrl("/base", true);
+                // http.oauth2Login().defaultSuccessUrl("/base")
+                //         .tokenEndpoint().accessTokenResponseClient(new AuthorizationCodeTokenResponseClient());
                 // http.oauth2Login().userInfoEndpoint().userService(new CustomOAuth2UserService());
 //                http.oauth2Client().authorizationCodeGrant().accessTokenResponseClient(new AuthorizationCodeTokenResponseClient());
+                http.formLogin().defaultSuccessUrl("/base").successForwardUrl("/base");
             };
         };
     }

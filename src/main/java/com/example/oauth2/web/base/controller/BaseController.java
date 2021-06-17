@@ -11,12 +11,16 @@ public class BaseController {
 
     @RequestMapping()
     public String base() {
-        return "This is base";
+        return "This is base abc";
     }
 
     @RequestMapping("user")
     public Authentication user() {
         return SecurityContextHolder.getContext().getAuthentication();
+    }
+    @RequestMapping("abc")
+    public String baseabc() {
+        return "This is base abc";
     }
 
 }

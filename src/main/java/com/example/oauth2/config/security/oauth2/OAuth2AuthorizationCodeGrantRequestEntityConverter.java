@@ -1,6 +1,5 @@
 package com.example.oauth2.config.security.oauth2;
 
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -15,7 +14,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
 public class OAuth2AuthorizationCodeGrantRequestEntityConverter implements Converter<OAuth2AuthorizationCodeGrantRequest, RequestEntity<?>> {
@@ -29,16 +27,6 @@ public class OAuth2AuthorizationCodeGrantRequestEntityConverter implements Conve
         URI uri = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails().getTokenUri())
                 .build()
                 .toUri();
-        // if (uri.getPath().contains("oauth/token")) {
-        //     String clientCredentials = formParameters.get("client_id").get(0) + ":" + formParameters.get("client_secret").get(0);
-        //     String base64ClientCredentials = null;
-        //     try {
-        //         base64ClientCredentials = new String(Base64.encodeBase64(clientCredentials.getBytes("utf-8")));
-        //     } catch (UnsupportedEncodingException e) {
-        //         e.printStackTrace();
-        //     }
-        //     headers.set("Authorization", "Basic " + base64ClientCredentials);
-        // }
         return new RequestEntity<>(formParameters, headers, HttpMethod.POST, uri);
     }
 
